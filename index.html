@@ -44,25 +44,17 @@
           ajax: { url: "myrient-enhanced.json", dataSrc: "" },
           columns: [
             { data: "Folder" },
-            { data: "Size_GB", render: (d) => d.toLocaleString() + " GB" },
-            {
-              data: "Size_KB",
-              render: (d) => Math.round((d / 1024 ** 2) * 100) / 100 + " GB",
-            },
-            {
-              data: "Size_Bits",
-              render: (d) => (d / 8 / 1024 ** 3).toFixed(2) + " GB",
-            },
+            { data: "Size_KB", render: (d) => d.toLocaleString() }, // Rohe KB: 377412063883.12
+            { data: "Size_Bits", render: (d) => d.toLocaleString() }, // Rohe Bits: 3091759627330560
             { data: "Files", render: (d) => d.toLocaleString() },
             {
               data: "URL",
               render: (v) => `<a href="${v}" target="_blank">Open</a>`,
             },
-            {
-              data: "recursive_bytes",
-              render: (d) => (d / 1024 ** 3).toFixed(2) + " GB",
-            },
+            { data: "Size_GB", render: (d) => d.toLocaleString() + " GB" }, // GB bleibt Ref
+            { data: "recursive_bytes", render: (d) => d.toLocaleString() }, // Rohe Bytes sogar
           ],
+
           pageLength: 50,
           order: [[1, "desc"]],
           paging: true,
