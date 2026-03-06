@@ -1,42 +1,106 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
-<title>Myrient Explorer</title>
-<script src="https://code.jquery.com/jquery-3.7.0.js"></script>
-<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
-<style>body{background:#1a1a1a;color:#fff;padding:20px;font-family:monospace;max-width:1400px;margin:auto}</style>
-</head>
-<body>
-<h1>🎮 Myrient Explorer (66k folders)</h1>
-<div id="status">Loading...</div>
-<table id="myTable" class="display">
-<thead>
-<tr>
-<th>Folder</th>
-<th>Size (GB)</th>
-<th>Files</th>
-<th>URL</th>
-</tr>
-</thead>
-</table>
-<script>
-$(document).ready(function() {
-  $('#myTable').DataTable({
-    ajax: {
-      url: 'myrient.json',
-      dataSrc: ''  // Array of Objects
-    },
-    columns: [
-      { data: 'Folder' },
-      { data: 'Size_GB', render: v => v.toLocaleString() + ' GB' },
-      { data: 'Files', render: v => v.toLocaleString() },
-      { data: 'URL', render: v => '<a href="' + v + '" target="_blank">Open</a>' }
-    ],
-    pageLength: 25,
-    order: [[1, 'desc']]
-  });
-});
-</script>
-</body>
+  <head>
+    <title>Myrient Explorer Pro</title>
+    <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css"
+    />
+    <style>
+      body {
+        background: #1a1a1a;
+        color: #fff;
+        font-family: monospace;
+        padding: 20px;
+      }
+      .container {
+        max-width: 1400px;
+        margin: auto;
+      }
+      .filters {
+        background: #2a2a2a;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+      }
+      .btn-group {
+        margin-right: 10px;
+      }
+      .btn.active {
+        background: #0d6efd;
+      }
+      #status {
+        margin-left: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🎮 Myrient Explorer Pro</h1>
+      <div class="filters">
+        <div class="btn-group">
+          <button class="btn btn-secondary active" data-depth="all">
+            All (66k)
+          </button>
+          <button class="btn btn-outline-light" data-depth="1">
+            Top-Level (21)
+          </button>
+          <button class="btn btn-outline-light" data-depth=">1">
+            Subfolders (66k)
+          </button>
+        </div>
+        <span id="status">Loading...</span>
+      </div>
+      <table id="myTable" class="display">
+        <thead>
+          <tr>
+            <th>Folder</th>
+            <th>Size</th>
+            <th>Files</th>
+            <th>URL</th>
+          </tr>
+        </thead>
+      </table>
+    </div>
+    <script>
+      let fullData = [];
+      $(document).ready(function () {
+        $.getJSON("myrient.json").done(function (data) {
+          fullData = data;
+          $("#status").text(data.length + " folders loaded ✓");
+          loadTable(data);
+        });
+        $("[data-depth]").click(function () {
+          $(this).addClass("active").siblings().removeClass("active");
+          let depth = $(this).data("depth");
+          let filtered = fullData;
+          if (depth === "1") filtered = fullData.filter((r) => r.depth === "1");
+          else if (depth === ">1")
+            filtered = fullData.filter((r) => r.depth !== "1");
+          loadTable(filtered);
+          $("#status").text(filtered.length + " shown");
+        });
+      });
+      function loadTable(data) {
+        if ($.fn.DataTable.isDataTable("#myTable"))
+          $("#myTable").DataTable().destroy();
+        $("#myTable").DataTable({
+          data: data,
+          pageLength: 50,
+          order: [[1, "desc"]],
+          columns: [
+            { data: "path" },
+            { data: "recursive_bytes_human" },
+            { data: "recursive_files", render: (v) => v.toLocaleString() },
+            {
+              data: "url",
+              render: (v) => "<a href='" + v + "' target='_blank'>Open</a>",
+            },
+          ],
+        });
+      }
+    </script>
+  </body>
 </html>
