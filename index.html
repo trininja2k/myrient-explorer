@@ -1,55 +1,68 @@
 <!DOCTYPE html>
-<html>
+<html lang="de">
 <head>
-  <title>Myrient Explorer</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Myrient Explorer - trininja2k</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
-  <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
 </head>
 <body class="bg-dark text-light">
-  <div class="container mt-4">
-    <h1>Myrient Archive <span id="loading" class="text-warning">Loading...</span></h1>
-    <table id="myrientTable" class="table table-dark table-striped" style="width:100%">
-      <thead>
-        <tr>
-          <th>Publisher</th>
-          <th>Platform</th>
-          <th>Size (GB)</th>
-          <th>Files</th>
-        </tr>
-      </thead>
-    </table>
+  <div class="container-fluid mt-3">
+    <div class="row">
+      <div class="col-md-12">
+        <h1 class="mb-3">🎮 Myrient Archive Explorer</h1>
+        <div id="status" class="alert alert-info">Loading 66k Datasets...</div>
+        <table id="myrientTable" class="table table-dark table-striped table-hover" style="width:100%">
+          <thead class="table-dark">
+            <tr>
+              <th>Publisher</th>
+              <th>Platform</th>
+              <th>Size (GB)</th>
+              <th>File Count</th>
+            </tr>
+          </thead>
+        </table>
+        <div class="mt-3">
+          <small>Source: <a href="https://github.com/prettyprintonline/myrient.org" class="text-info">myrient_folder_breakdown.csv</a> | 
+          <a href="https://trininja2k.github.io/myrient-explorer/myrient.json" class="text-info">JSON</a></small>
+        </div>
+      </div>
+    </div>
   </div>
   <script>
   $(document).ready(function() {
-    Papa.parse('myrient_folder_breakdown.csv', {
-      download: true,
-      header: true,
-      skipEmptyLines: true,
-      complete: function(results) {
-        $('#loading').text(results.data.length + ' Datasets loaded');
-        if (results.errors.length) console.error('Parse Errors:', results.errors);
-        
+    $.getJSON('myrient.json')
+      .done(function(data) {
+        $('#status').removeClass('alert-info').addClass('alert-success').html(data.length + ' Datasets loaded ✓');
         $('#myrientTable').DataTable({
-          data: results.data,
-          columns: [
-            { data: 'Publisher', defaultContent: '' },
-            { data: 'Platform', defaultContent: '' },
-            { data: 'Size_GB', render: data => parseFloat(data || 0).toLocaleString() + ' GB', defaultContent: '0 GB' },
-            { data: 'File_Count', render: data => parseInt(data || 0).toLocaleString(), defaultContent: '0' }
-          ],
+          data: data,
           pageLength: 50,
           order: [[2, 'desc']],
-          dom: 'Bfrtip',
-          buttons: ['copyHtml5', 'csvHtml5'],
-          language: { search: 'Suche Platforms/Publisher...' }
+          columnDefs: [
+            { targets: [2,3], className: 'text-end' }
+          ],
+          dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>' +
+               '<"row"<"col-sm-12"tr>>' +
+               '<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
+          language: {
+            search: 'Suche (MAME, PC Engine...)',
+            emptyTable: 'Noch keine Daten geladen'
+          },
+          drawCallback: function() {
+            $('[data-order]').removeClass('active');
+          }
         });
-      },
-      error: function(err) { $('#loading').text('CSV Error: ' + err); }
-    });
+      })
+      .fail(function(xhr, status, error) {
+        $('#status').removeClass('alert-info').addClass('alert-danger').html('JSON Error: ' + error + '<br>Console F12');
+        console.error('Load failed:', xhr.responseText);
+      });
   });
   </script>
 </body>
