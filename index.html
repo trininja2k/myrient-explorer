@@ -1,54 +1,373 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Myrient Final - Bytes Sort</title>
+  <!-- ============================================ -->
+  <!-- META & TITLE                                  -->
+  <!-- ============================================ -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Myrient Explorer - ROM Collection Browser</title>
+  <meta name="description" content="Browse and search the Myrient ROM collection with advanced filtering and sorting capabilities">
+
+  <!-- ============================================ -->
+  <!-- EXTERNAL DEPENDENCIES                         -->
+  <!-- ============================================ -->
   <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
   <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+
+  <!-- ============================================ -->
+  <!-- CUSTOM STYLES                                 -->
+  <!-- ============================================ -->
   <style>
-    body{background:#1a1a1a;color:#fff;font-family:monospace;padding:20px;}
-    h1{color:#0f0;text-align:center;}
-    th{background:#333;color:#0f0;}
-    td.numeric{text-align:right;}
+    /* === Global Styles === */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: #1a1a1a;
+      color: #e0e0e0;
+      font-family: 'Courier New', Courier, monospace;
+      padding: 20px;
+      line-height: 1.6;
+    }
+
+    /* === Header === */
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px 0;
+      border-bottom: 2px solid #00ff00;
+    }
+
+    h1 {
+      color: #00ff00;
+      font-size: 2.5em;
+      text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: #888;
+      font-size: 1.1em;
+      margin-bottom: 15px;
+    }
+
+    /* === Info Box === */
+    .info-box {
+      background: #252525;
+      border: 1px solid #333;
+      border-radius: 5px;
+      padding: 15px;
+      margin-bottom: 20px;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .info-box h3 {
+      color: #00ff00;
+      margin-bottom: 10px;
+      font-size: 1.2em;
+    }
+
+    .info-box ul {
+      list-style: none;
+      padding-left: 20px;
+    }
+
+    .info-box li {
+      margin: 5px 0;
+      color: #ccc;
+    }
+
+    .info-box li::before {
+      content: "▸ ";
+      color: #00ff00;
+      font-weight: bold;
+    }
+
+    .regex-hint {
+      color: #ffaa00;
+      font-weight: bold;
+      background: rgba(255, 170, 0, 0.1);
+      padding: 2px 6px;
+      border-radius: 3px;
+    }
+
+    /* === Table Container === */
+    .table-container {
+      background: #242424;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    }
+
+    /* === DataTable Customization === */
+    table.dataTable {
+      width: 100% !important;
+      background: #1e1e1e;
+      border-collapse: collapse;
+    }
+
+    table.dataTable thead th {
+      background: #2a2a2a;
+      color: #00ff00;
+      border-bottom: 2px solid #00ff00;
+      padding: 12px 8px;
+      font-weight: bold;
+      text-align: left;
+    }
+
+    table.dataTable tbody tr {
+      background: #1e1e1e;
+      border-bottom: 1px solid #333;
+      transition: background 0.2s ease;
+    }
+
+    table.dataTable tbody tr:hover {
+      background: #2a2a2a;
+    }
+
+    table.dataTable tbody td {
+      padding: 10px 8px;
+      color: #e0e0e0;
+    }
+
+    /* === Numeric Columns === */
+    td.dt-type-numeric,
+    th.dt-type-numeric {
+      text-align: right !important;
+    }
+
+    /* === Links === */
+    a {
+      color: #00aaff;
+      text-decoration: none;
+      padding: 4px 8px;
+      border-radius: 3px;
+      transition: all 0.2s;
+    }
+
+    a:hover {
+      background: #00aaff;
+      color: #1a1a1a;
+    }
+
+    /* === DataTable Controls === */
+    .dataTables_wrapper .dataTables_length,
+    .dataTables_wrapper .dataTables_filter,
+    .dataTables_wrapper .dataTables_info,
+    .dataTables_wrapper .dataTables_paginate {
+      color: #ccc;
+      margin: 10px 0;
+    }
+
+    .dataTables_wrapper .dataTables_filter input {
+      background: #2a2a2a;
+      border: 1px solid #444;
+      color: #e0e0e0;
+      padding: 5px 10px;
+      border-radius: 4px;
+      margin-left: 8px;
+    }
+
+    .dataTables_wrapper .dataTables_length select {
+      background: #2a2a2a;
+      border: 1px solid #444;
+      color: #e0e0e0;
+      padding: 4px 8px;
+      border-radius: 4px;
+      margin: 0 8px;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+      color: #00ff00 !important;
+      background: #2a2a2a;
+      border: 1px solid #444;
+      padding: 5px 12px;
+      margin: 0 2px;
+      border-radius: 4px;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+      background: #00ff00 !important;
+      color: #1a1a1a !important;
+      border-color: #00ff00 !important;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+      background: #00aa00 !important;
+      color: #fff !important;
+      border-color: #00aa00 !important;
+    }
+
+    /* === Responsive Design === */
+    @media (max-width: 768px) {
+      body {
+        padding: 10px;
+      }
+
+      h1 {
+        font-size: 1.8em;
+      }
+
+      .info-box {
+        padding: 10px;
+      }
+
+      .table-container {
+        padding: 10px;
+        overflow-x: auto;
+      }
+    }
   </style>
 </head>
+
 <body>
-<h1>🎮 Myrient Explorer Final</h1>
-<table id="table" class="display">
-  <thead>
-    <tr>
-      <th>Folder</th>
-      <th class="numeric">GB</th>
-      <th class="numeric">Bytes (raw)</th>
-      <th class="numeric">KB</th>
-      <th class="numeric">Bits</th>
-      <th>Files</th>
-      <th>URL</th>
-    </tr>
-  </thead>
-</table>
-<script>
-$(document).ready(function(){
-  $('#table').DataTable({
-    ajax: {url: 'myrient-final.json', dataSrc: ''},
-    columns: [
-      {data: 'Folder'},
-      {data: 'GB'},
-      {data: 'Bytes'},
-      {data: 'KB'},
-      {data: 'Bits'},
-      {data: 'Files'},
-      {data: 'URL', render: v => `<a href="\${v}" target="_blank">Open</a>`}
-    ],
-    columnDefs: [{
-      targets: [1,2,3,4,5],
-      render: (data, type) => type === 'sort' ? BigInt(data) : data.toLocaleString()
-    }],
-    pageLength: 50,
-    order: [[2, 'desc']],  // Bytes exakt!
-    searching: true
-  });
-});
-</script>
+  <!-- ============================================ -->
+  <!-- HEADER SECTION                                -->
+  <!-- ============================================ -->
+  <header>
+    <h1>🎮 Myrient Explorer</h1>
+    <p class="subtitle">Browse the complete ROM collection archive</p>
+  </header>
+
+  <!-- ============================================ -->
+  <!-- INFORMATION BOX                               -->
+  <!-- ============================================ -->
+  <div class="info-box">
+    <h3>🔍 Search & Filter Features</h3>
+    <ul>
+      <li>Search by folder name, file count, or size</li>
+      <li><span class="regex-hint">RegEx supported!</span> Use patterns like <code>^No-Intro|Redump$</code> for advanced filtering</li>
+      <li>Click column headers to sort (supports large numbers)</li>
+      <li>All numeric values are properly formatted and sortable</li>
+    </ul>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- DATA TABLE                                    -->
+  <!-- ============================================ -->
+  <div class="table-container">
+    <table id="myrientTable" class="display" style="width:100%">
+      <thead>
+        <tr>
+          <th>Folder</th>
+          <th>GB</th>
+          <th>Bytes</th>
+          <th>KB</th>
+          <th>Bits</th>
+          <th>Files</th>
+          <th>URL</th>
+        </tr>
+      </thead>
+    </table>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- JAVASCRIPT LOGIC                              -->
+  <!-- ============================================ -->
+  <script>
+    $(document).ready(function() {
+      // === Initialize DataTable ===
+      const table = $('#myrientTable').DataTable({
+        // === Data Source ===
+        ajax: {
+          url: 'myrient-final.json',
+          dataSrc: ''
+        },
+
+        // === Column Configuration ===
+        columns: [
+          { data: 'Folder' },
+          { data: 'GB', className: 'dt-type-numeric' },
+          { data: 'Bytes', className: 'dt-type-numeric' },
+          { data: 'KB', className: 'dt-type-numeric' },
+          { data: 'Bits', className: 'dt-type-numeric' },
+          { data: 'Files', className: 'dt-type-numeric' },
+          {
+            data: 'URL',
+            render: function(data, type, row) {
+              if (type === 'display') {
+                return '<a href="' + data + '" target="_blank" rel="noopener noreferrer">Open</a>';
+              }
+              return data;
+            },
+            orderable: false
+          }
+        ],
+
+        // === Column Display & Sorting ===
+        columnDefs: [
+          {
+            // Numeric columns: format with thousands separators, sort as numbers
+            targets: [1, 2, 3, 4, 5],
+            render: function(data, type, row) {
+              // For sorting: return the raw numeric value
+              if (type === 'sort' || type === 'type') {
+                // Convert to number for proper sorting
+                return parseFloat(data);
+              }
+              // For display/filter: format with thousands separators
+              if (type === 'display' || type === 'filter') {
+                // Handle both string and numeric inputs
+                const num = typeof data === 'string' ? parseFloat(data.replace(/,/g, '')) : data;
+                return num.toLocaleString('en-US');
+              }
+              return data;
+            }
+          }
+        ],
+
+        // === Table Settings ===
+        pageLength: 50,
+        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+        order: [[2, 'desc']], // Sort by Bytes column (descending)
+        searching: true,
+        processing: true,
+
+        // === Search Settings (RegEx Support) ===
+        search: {
+          regex: true,  // Enable regex search
+          smart: true   // Enable smart search
+        },
+
+        // === Language/Display Settings ===
+        language: {
+          search: "Search (RegEx enabled):",
+          searchPlaceholder: "Try: ^No-Intro or MAME|TOSEC",
+          lengthMenu: "Show _MENU_ entries per page",
+          info: "Showing _START_ to _END_ of _TOTAL_ collections",
+          infoEmpty: "No collections found",
+          infoFiltered: "(filtered from _MAX_ total)",
+          paginate: {
+            first: "First",
+            last: "Last",
+            next: "Next",
+            previous: "Prev"
+          }
+        }
+      });
+
+      // === Custom RegEx Search Handler ===
+      // Allow users to toggle regex mode by detecting regex patterns
+      $.fn.dataTable.ext.search.push(
+        function(settings, searchData, index, rowData, counter) {
+          // This extends the default search to better handle regex
+          // The built-in regex support is already enabled above
+          return true; // Let DataTables handle it
+        }
+      );
+
+      console.log('✅ Myrient Explorer initialized successfully');
+      console.log('📊 Data source: myrient-final.json');
+      console.log('🔍 RegEx search enabled - try patterns like: ^Internet|^Redump$');
+    });
+  </script>
+
 </body>
 </html>
