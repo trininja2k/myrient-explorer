@@ -3,68 +3,39 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Myrient Explorer - KB/Bits Exact</title>
-
-    <!-- DataTables CSS/JS -->
+    <title>Myrient Explorer - Numeric Sort</title>
     <link
       rel="stylesheet"
       href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css"
     />
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
-
     <style>
       body {
         background: #1a1a1a;
         color: #fff;
-        font-family: "Courier New", monospace;
+        font-family: monospace;
         padding: 20px;
-        margin: 0;
       }
       h1 {
         color: #0f0;
-        text-align: center;
-      }
-      #table_wrapper {
-        background: #222;
-        padding: 15px;
-        border-radius: 8px;
-      }
-      table {
-        width: 100% !important;
       }
       th {
         background: #333;
         color: #0f0;
-        font-weight: bold;
-        text-align: left;
-      }
-      .numeric {
-        text-align: right;
-        font-family: monospace;
-      }
-      a {
-        color: #00ff00;
-      }
-      a:hover {
-        background: #0f0;
-        color: #000;
       }
     </style>
   </head>
   <body>
-    <h1>🧮 Myrient Explorer (66k Ordner)</h1>
-    <p>
-      <strong>JSON:</strong> myrient-fixed.json | <strong>Sort:</strong> KB desc
-    </p>
-
-    <table id="myrientTable" class="display">
+    <h1>🧮 Myrient Explorer - Numeric Sort Fixed</h1>
+    <table id="table" class="display">
       <thead>
         <tr>
           <th>Folder</th>
-          <th class="numeric">Size KB (raw)</th>
-          <th class="numeric">Size Bits (raw)</th>
-          <th class="numeric">Files</th>
+          <th>GB</th>
+          <th>KB (raw)</th>
+          <th>Bits (raw)</th>
+          <th>Files</th>
           <th>URL</th>
         </tr>
       </thead>
@@ -72,46 +43,35 @@
 
     <script>
       $(document).ready(function () {
-        $("#myrientTable").DataTable({
-          ajax: {
-            url: "myrient-fixed.json",
-            dataSrc: "",
-          },
+        $("#table").DataTable({
+          ajax: { url: "myrient-fixed.json", dataSrc: "" },
           columns: [
             { data: "Folder" },
-            {
-              data: "Size_KB",
-              render: function (d) {
-                return d.toLocaleString();
-              },
-              className: "numeric",
-            },
-            {
-              data: "Size_Bits",
-              render: function (d) {
-                return d.toLocaleString();
-              },
-              className: "numeric",
-            },
-            {
-              data: "Files",
-              render: function (d) {
-                return d.toLocaleString();
-              },
-              className: "numeric",
-            },
+            { data: "Size_GB" },
+            { data: "Size_KB" },
+            { data: "Size_Bits" },
+            { data: "Files" },
             {
               data: "URL",
-              render: function (v) {
-                return `<a href="${v}" target="_blank">Open</a>`;
+              render: (v) => `<a href="${v}" target="_blank">Open</a>`,
+            },
+          ],
+          columnDefs: [
+            {
+              targets: [1, 2, 3, 4],
+              render: function (data, type) {
+                if (type === "sort" || type === "type") {
+                  return parseFloat(
+                    data.toString().replace(/\./g, "").replace(",", "."),
+                  );
+                }
+                return data.toLocaleString();
               },
             },
           ],
           pageLength: 50,
-          order: [[1, "desc"]], // KB absteigend
+          order: [[1, "desc"]], // GB numerisch!
           searching: true,
-          paging: true,
-          info: true,
         });
       });
     </script>
