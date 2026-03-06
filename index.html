@@ -361,12 +361,20 @@
 
       // === RegEx Toggle Handler ===
       $('#regexToggle').on('change', function() {
-        const searchValue = $('.dataTables_filter input').val();
         const isRegex = $(this).is(':checked');
-        
-        // Re-apply search with regex flag
-        table.search(searchValue, isRegex, !isRegex).draw();
-        
+
+        // Update DataTables search settings
+        table.settings()[0].oInit.search = {
+          regex: isRegex,
+          smart: !isRegex
+        };
+
+        // Re-trigger current search
+        const currentSearch = table.search();
+        if (currentSearch) {
+          table.search(currentSearch, isRegex, !isRegex).draw();
+        }
+
         // Visual feedback
         if (isRegex) {
           $('.dataTables_filter input').css({
@@ -381,15 +389,6 @@
           });
           console.log('🔍 Normal search mode');
         }
-      });
-
-      // === Live Search Update ===
-      $('.dataTables_filter input').on('keyup search', function() {
-        const isRegex = $('#regexToggle').is(':checked');
-        const searchValue = $(this).val();
-        
-        // Apply search with current regex setting
-        table.search(searchValue, isRegex, !isRegex).draw();
       });
 
       console.log('✅ Myrient Explorer initialized successfully');
