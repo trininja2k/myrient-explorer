@@ -2,7 +2,7 @@
 REM Windows batch script for downloading from Myrient using rclone
 REM Requires rclone to be installed and configured with remote "myrient:"
 
-setlocal enabledelayedexpansion
+setlocal disabledelayedexpansion
 
 set "REMOTE=myrient:"
 set "LOCAL_BASE=.\"
@@ -18,12 +18,21 @@ if not exist "%LIST_FILE%" (
 for /f "usebackq tokens=* delims=" %%A in ("%LIST_FILE%") do (
     set "line=%%A"
 
+    REM Enable delayed expansion only for processing, not for reading
+    setlocal enabledelayedexpansion
+
     REM Skip empty lines
-    if "!line!"=="" goto :continue
+    if "!line!"=="" (
+        endlocal
+        goto :continue
+    )
 
     REM Skip comment lines starting with #
     echo !line! | findstr /b /c:"#" >nul
-    if !errorlevel! equ 0 goto :continue
+    if !errorlevel! equ 0 (
+        endlocal
+        goto :continue
+    )
 
     REM Remove trailing slash if present
     set "dir=!line!"
@@ -54,11 +63,14 @@ for /f "usebackq tokens=* delims=" %%A in ("%LIST_FILE%") do (
         --log-file="%LOG_FILE%" ^
         --log-level INFO
 
-    echo Finished: !dir! (Exit Code: !errorlevel!) >> "%LOG_FILE%"
+    set "exitcode=!errorlevel!"
+    echo Finished: !dir! (Exit Code: !exitcode!) >> "%LOG_FILE%"
     echo. >> "%LOG_FILE%"
 
-    echo Finished: !dir! (Exit Code: !errorlevel!)
+    echo Finished: !dir! (Exit Code: !exitcode!)
     echo.
+
+    endlocal
 
     :continue
 )
