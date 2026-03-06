@@ -1,35 +1,41 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Myrient Archive Explorer</title>
-  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+  <title>Myrient Explorer</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
   <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
   <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
 </head>
 <body class="bg-dark text-light">
   <div class="container mt-4">
-    <h1 class="mb-4">Myrient Folder Breakdown <small class="text-muted">~15k Platforms</small></h1>
+    <h1>Myrient Folder Breakdown</h1>
     <table id="myrientTable" class="table table-dark table-striped" style="width:100%">
-      <thead><tr><th>Publisher</th><th>Platform</th><th>Size (GB)</th><th>Files</th></tr></thead>
+      <thead><tr><th>Publisher</th><th>Platform</th><th>Size_GB</th><th>File_Count</th></tr></thead>
     </table>
   </div>
   <script>
-  $(document).ready(function() {
-    $('#myrientTable').DataTable({
-      ajax: {url: 'myrient_folder_breakdown.csv', dataSrc: ''},
-      columns: [
-        {data: 0}, {data: 1}, 
-        {data: 2, render: $.fn.dataTable.render.number(',', '.', 0)}, 
-        {data: 3, render: $.fn.dataTable.render.number(',', '.', 0)}
-      ],
-      pageLength: 50,
-      order: [[2, 'desc']],
-      dom: 'Bfrtip',
-      buttons: ['copy', 'csv', 'excel']
-    });
+  Papa.parse('myrient_folder_breakdown.csv', {
+    download: true,
+    header: true,
+    complete: function(results) {
+      $('#myrientTable').DataTable({
+        data: results.data,
+        columns: [
+          { data: 'Publisher' },
+          { data: 'Platform' },
+          { data: 'Size_GB', render: $.fn.dataTable.render.number(',', '.', 1) },
+          { data: 'File_Count', render: $.fn.dataTable.render.number(',', '.', 0) }
+        ],
+        pageLength: 50,
+        order: [[2, 'desc']],
+        dom: 'Bfrtip',
+        buttons: ['copy', 'csv']
+      });
+    }
   });
   </script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 </body>
 </html>
