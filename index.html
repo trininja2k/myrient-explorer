@@ -1,36 +1,40 @@
-
 <!DOCTYPE html>
 <html>
 <head>
-<title>Myrient Explorer - Fixed</title>
+<title>Myrient Explorer</title>
 <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
 <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
-<style>body{max-width:1400px;margin:auto;padding:20px;background:#1a1a1a;color:#fff;font-family:sans-serif}</style>
+<style>body{background:#1a1a1a;color:#fff;padding:20px;font-family:monospace;max-width:1400px;margin:auto}</style>
 </head>
 <body>
-<h1>🎮 Myrient Folder Sizes (66k folders)</h1>
+<h1>🎮 Myrient Explorer (66k folders)</h1>
 <div id="status">Loading...</div>
-<table id="myTable" class="display nowrap">
-<thead><tr><th>Folder</th><th>Size GB</th><th>Files</th><th>URL</th></tr></thead>
+<table id="myTable" class="display">
+<thead>
+<tr>
+<th>Folder</th>
+<th>Size (GB)</th>
+<th>Files</th>
+<th>URL</th>
+</tr>
+</thead>
 </table>
 <script>
 $(document).ready(function() {
-  $.getJSON("myrient.json").done(function(data) {
-    $("#status").text(data.length + " folders loaded ✓");
-    $("#myTable").DataTable({
-      data: data,
-      pageLength: 25,
-      order: [[1, "desc"]],
-      columns: [
-        {data: "Folder"},
-        {data: "Size_GB", render: function(data) { return data.toLocaleString(); }},
-        {data: "Files", render: function(data) { return data.toLocaleString(); }},
-        {data: "URL", render: function(data) { return "<a href="" + data + "" target="_blank">Open</a>"; }}
-      ]
-    });
-  }).fail(function() {
-    $("#status").html("JSON Error - Check F12 Console");
+  $('#myTable').DataTable({
+    ajax: {
+      url: 'myrient.json',
+      dataSrc: ''  // Array of Objects
+    },
+    columns: [
+      { data: 'Folder' },
+      { data: 'Size_GB', render: v => v.toLocaleString() + ' GB' },
+      { data: 'Files', render: v => v.toLocaleString() },
+      { data: 'URL', render: v => '<a href="' + v + '" target="_blank">Open</a>' }
+    ],
+    pageLength: 25,
+    order: [[1, 'desc']]
   });
 });
 </script>
