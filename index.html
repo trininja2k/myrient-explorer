@@ -1,79 +1,54 @@
-<!doctype html>
-<html lang="de">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Myrient Explorer - Numeric Sort</title>
-    <link
-      rel="stylesheet"
-      href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css"
-    />
-    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
-    <style>
-      body {
-        background: #1a1a1a;
-        color: #fff;
-        font-family: monospace;
-        padding: 20px;
-      }
-      h1 {
-        color: #0f0;
-      }
-      th {
-        background: #333;
-        color: #0f0;
-      }
-    </style>
-  </head>
-  <body>
-    <h1>🧮 Myrient Explorer - Numeric Sort Fixed</h1>
-    <table id="table" class="display">
-      <thead>
-        <tr>
-          <th>Folder</th>
-          <th>GB</th>
-          <th>KB (raw)</th>
-          <th>Bits (raw)</th>
-          <th>Files</th>
-          <th>URL</th>
-        </tr>
-      </thead>
-    </table>
-
-    <script>
-      $(document).ready(function () {
-        $("#table").DataTable({
-          ajax: { url: "myrient-fixed.json", dataSrc: "" },
-          columns: [
-            { data: "Folder" },
-            { data: "Size_GB" },
-            { data: "Size_KB" },
-            { data: "Size_Bits" },
-            { data: "Files" },
-            {
-              data: "URL",
-              render: (v) => `<a href="${v}" target="_blank">Open</a>`,
-            },
-          ],
-          columnDefs: [
-            {
-              targets: [1, 2, 3, 4],
-              render: function (data, type) {
-                if (type === "sort" || type === "type") {
-                  return parseFloat(
-                    data.toString().replace(/\./g, "").replace(",", "."),
-                  );
-                }
-                return data.toLocaleString();
-              },
-            },
-          ],
-          pageLength: 50,
-          order: [[1, "desc"]], // GB numerisch!
-          searching: true,
-        });
-      });
-    </script>
-  </body>
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Myrient Final - Bytes Sort</title>
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
+  <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+  <style>
+    body{background:#1a1a1a;color:#fff;font-family:monospace;padding:20px;}
+    h1{color:#0f0;text-align:center;}
+    th{background:#333;color:#0f0;}
+    td.numeric{text-align:right;}
+  </style>
+</head>
+<body>
+<h1>🎮 Myrient Explorer Final</h1>
+<table id="table" class="display">
+  <thead>
+    <tr>
+      <th>Folder</th>
+      <th class="numeric">GB</th>
+      <th class="numeric">Bytes (raw)</th>
+      <th class="numeric">KB</th>
+      <th class="numeric">Bits</th>
+      <th>Files</th>
+      <th>URL</th>
+    </tr>
+  </thead>
+</table>
+<script>
+$(document).ready(function(){
+  $('#table').DataTable({
+    ajax: {url: 'myrient-final.json', dataSrc: ''},
+    columns: [
+      {data: 'Folder'},
+      {data: 'GB'},
+      {data: 'Bytes'},
+      {data: 'KB'},
+      {data: 'Bits'},
+      {data: 'Files'},
+      {data: 'URL', render: v => `<a href="\${v}" target="_blank">Open</a>`}
+    ],
+    columnDefs: [{
+      targets: [1,2,3,4,5],
+      render: (data, type) => type === 'sort' ? BigInt(data) : data.toLocaleString()
+    }],
+    pageLength: 50,
+    order: [[2, 'desc']],  // Bytes exakt!
+    searching: true
+  });
+});
+</script>
+</body>
 </html>
