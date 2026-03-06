@@ -1,106 +1,68 @@
 <!doctype html>
 <html>
   <head>
-    <title>Myrient Explorer Pro</title>
-    <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
-    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <title>Myrient Explorer</title>
     <link
       rel="stylesheet"
       href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css"
     />
+    <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
     <style>
       body {
         background: #1a1a1a;
         color: #fff;
         font-family: monospace;
         padding: 20px;
-      }
-      .container {
         max-width: 1400px;
         margin: auto;
       }
-      .filters {
-        background: #2a2a2a;
-        padding: 15px;
-        border-radius: 8px;
-        margin-bottom: 20px;
-      }
-      .btn-group {
-        margin-right: 10px;
-      }
-      .btn.active {
-        background: #0d6efd;
+      h1 {
+        color: #0ea5e9;
       }
       #status {
-        margin-left: 10px;
+        margin: 10px 0;
+        padding: 10px;
+        background: #2a2a2a;
+        border-radius: 5px;
       }
     </style>
   </head>
   <body>
-    <div class="container">
-      <h1>🎮 Myrient Explorer Pro</h1>
-      <div class="filters">
-        <div class="btn-group">
-          <button class="btn btn-secondary active" data-depth="all">
-            All (66k)
-          </button>
-          <button class="btn btn-outline-light" data-depth="1">
-            Top-Level (21)
-          </button>
-          <button class="btn btn-outline-light" data-depth=">1">
-            Subfolders (66k)
-          </button>
-        </div>
-        <span id="status">Loading...</span>
-      </div>
-      <table id="myTable" class="display">
-        <thead>
-          <tr>
-            <th>Folder</th>
-            <th>Size</th>
-            <th>Files</th>
-            <th>URL</th>
-          </tr>
-        </thead>
-      </table>
-    </div>
+    <h1>🎮 Myrient Explorer (66k folders)</h1>
+    <div id="status">Loading JSON...</div>
+    <table id="table" class="display" style="width: 100%">
+      <thead>
+        <tr>
+          <th>Folder</th>
+          <th>Size</th>
+          <th>Files</th>
+          <th>URL</th>
+        </tr>
+      </thead>
+    </table>
     <script>
-      let fullData = [];
-      $(document).ready(function () {
-        $.getJSON("myrient.json").done(function (data) {
-          fullData = data;
-          $("#status").text(data.length + " folders loaded ✓");
-          loadTable(data);
-        });
-        $("[data-depth]").click(function () {
-          $(this).addClass("active").siblings().removeClass("active");
-          let depth = $(this).data("depth");
-          let filtered = fullData;
-          if (depth === "1") filtered = fullData.filter((r) => r.depth === "1");
-          else if (depth === ">1")
-            filtered = fullData.filter((r) => r.depth !== "1");
-          loadTable(filtered);
-          $("#status").text(filtered.length + " shown");
+      $(document).ready(function() {
+        var table = $('#table').DataTable({
+          "ajax": {
+            "url": "myrient.json",
+            "dataSrc": function (json) {
+              return json;  // Array of objects
+            }
+          },
+          "columns": [
+            {"data": "Folder"},
+            {"data": "Size_GB", "render": function (data) { return data.toLocaleString() + " GB"; }},
+            {"data": "Files", "render": function (data) { return data.toLocaleString(); }},
+            {"data": "URL", "render": function (data) { return "<a href="" + data + "" target="_blank">Open</a>"; }}
+          ],
+          "pageLength": 25,
+          "order": [[1, "desc"]],
+          "drawCallback": function() {
+            $("#status").text(table.page.info().recordsTotal + " folders shown");
+          }
         });
       });
-      function loadTable(data) {
-        if ($.fn.DataTable.isDataTable("#myTable"))
-          $("#myTable").DataTable().destroy();
-        $("#myTable").DataTable({
-          data: data,
-          pageLength: 50,
-          order: [[1, "desc"]],
-          columns: [
-            { data: "path" },
-            { data: "recursive_bytes_human" },
-            { data: "recursive_files", render: (v) => v.toLocaleString() },
-            {
-              data: "url",
-              render: (v) => "<a href='" + v + "' target='_blank'>Open</a>",
-            },
-          ],
-        });
-      }
     </script>
   </body>
 </html>
