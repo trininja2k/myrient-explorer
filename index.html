@@ -243,8 +243,9 @@
     <h3>🔍 Search & Filter Features</h3>
     <ul>
       <li>Search by folder name, file count, or size</li>
-      <li><span class="regex-hint">RegEx supported!</span> Use patterns like <code>^No-Intro|Redump$</code> for advanced filtering</li>
-      <li>Click column headers to sort (supports large numbers)</li>
+      <li><span class="regex-hint">RegEx checkbox below!</span> Enable the checkbox to use patterns</li>
+      <li>Examples: <code>^No-Intro</code> (starts with), <code>MAME|TOSEC</code> (either/or), <code>.*ISO$</code> (ends with)</li>
+      <li>Click column headers to sort (all sizes handled correctly)</li>
       <li>All numeric values are properly formatted and sortable</li>
     </ul>
   </div>
@@ -253,6 +254,17 @@
   <!-- DATA TABLE                                    -->
   <!-- ============================================ -->
   <div class="table-container">
+    <!-- Search Controls -->
+    <div id="customSearch" style="margin-bottom: 15px; padding: 10px; background: #2a2a2a; border-radius: 5px;">
+      <label style="color: #00ff00; font-weight: bold; margin-right: 10px;">
+        <input type="checkbox" id="regexToggle" style="margin-right: 5px; cursor: pointer;">
+        Enable RegEx Search
+      </label>
+      <span style="color: #888; font-size: 0.9em;">
+        (e.g., <code style="color: #ffaa00;">^Internet</code> or <code style="color: #ffaa00;">MAME|TOSEC</code>)
+      </span>
+    </div>
+
     <table id="myrientTable" class="display" style="width:100%">
       <thead>
         <tr>
@@ -330,16 +342,10 @@
         searching: true,
         processing: true,
 
-        // === Search Settings (RegEx Support) ===
-        search: {
-          regex: true,  // Enable regex search
-          smart: true   // Enable smart search
-        },
-
         // === Language/Display Settings ===
         language: {
-          search: "Search (RegEx enabled):",
-          searchPlaceholder: "Try: ^No-Intro or MAME|TOSEC",
+          search: "Search:",
+          searchPlaceholder: "Search folders...",
           lengthMenu: "Show _MENU_ entries per page",
           info: "Showing _START_ to _END_ of _TOTAL_ collections",
           infoEmpty: "No collections found",
@@ -353,21 +359,40 @@
         }
       });
 
-      // === Custom RegEx Search Handler ===
-      // Allow users to toggle regex mode by detecting regex patterns
-      $.fn.dataTable.ext.search.push(
-        function(settings, searchData, index, rowData, counter) {
-          // This extends the default search to better handle regex
-          // The built-in regex support is already enabled above
-          return true; // Let DataTables handle it
+      // === RegEx Toggle Handler ===
+      $('#regexToggle').on('change', function() {
+        const searchValue = $('.dataTables_filter input').val();
+        const isRegex = $(this).is(':checked');
+        
+        // Re-apply search with regex flag
+        table.search(searchValue, isRegex, !isRegex).draw();
+        
+        // Visual feedback
+        if (isRegex) {
+          $('.dataTables_filter input').css({
+            'border': '2px solid #00ff00',
+            'background': 'rgba(0, 255, 0, 0.05)'
+          });
+          console.log('🔍 RegEx mode enabled');
+        } else {
+          $('.dataTables_filter input').css({
+            'border': '1px solid #444',
+            'background': '#2a2a2a'
+          });
+          console.log('🔍 Normal search mode');
         }
-      );
+      });
+
+      // === Live Search Update ===
+      $('.dataTables_filter input').on('keyup search', function() {
+        const isRegex = $('#regexToggle').is(':checked');
+        const searchValue = $(this).val();
+        
+        // Apply search with current regex setting
+        table.search(searchValue, isRegex, !isRegex).draw();
+      });
 
       console.log('✅ Myrient Explorer initialized successfully');
       console.log('📊 Data source: myrient-final.json');
-      console.log('🔍 RegEx search enabled - try patterns like: ^Internet|^Redump$');
-    });
-  </script>
-
-</body>
-</html>
+      console.log('🔍 Toggle the RegEx checkbox to enable pattern matching');
+      console.log('   Examples: ^Internet (starts with), MAME|TOSEC (either), .*ISO$ (ends with)');
